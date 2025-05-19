@@ -45,7 +45,7 @@ fun SelectSexBodyComponent(navController: NavController) {
                 .padding(horizontal = 40.dp, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(120.dp))
+            Spacer(modifier = Modifier.height(100.dp))
             SexTextComponent()
 
             Spacer(modifier = Modifier.height(30.dp))
@@ -60,7 +60,7 @@ fun SelectSexBodyComponent(navController: NavController) {
                 }
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             SexoOptionButton(
                 imagenId = R.drawable.mujer_img,

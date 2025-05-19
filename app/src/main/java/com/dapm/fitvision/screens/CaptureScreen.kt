@@ -2,31 +2,16 @@ package com.dapm.fitvision.screens
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,12 +19,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.dapm.fitvision.R
 import com.dapm.fitvision.navigation.AppScreens
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaType
+import org.json.JSONObject
+import java.io.ByteArrayOutputStream
+import java.io.IOException
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -114,7 +103,6 @@ fun CaptureBodyComponent(navController: NavController) {
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Mostrar error si no hay imagen al hacer clic
             if (showError) {
                 Text(
                     text = "Debe subir una imagen de cuerpo completo antes de continuar",
@@ -166,13 +154,13 @@ fun ImageSelectionButtons(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         IconTextButton(
-            iconId = R.drawable.ic_camera, // Tu ícono
+            iconId = R.drawable.ic_camera,
             text = "Capturar imagen",
             onClick = onCameraClick
         )
 
         IconTextButton(
-            iconId = R.drawable.ic_gallery, // Tu ícono
+            iconId = R.drawable.ic_gallery,
             text = "Cargar imagen",
             onClick = onGalleryClick
         )
@@ -214,7 +202,17 @@ fun CalculateButtonComponent(
     Button(
         onClick = {
             if (capturedImage != null) {
-                navController.navigate(route = AppScreens.LoadingScreen.route)
+                val base64 = bitmapToBase64(capturedImage)
+                enviarImagenAlBackend(
+                    base64Image = base64,
+                    onResult = { tipo ->
+                        navController.navigate(AppScreens.ResultScreen.createRoute(tipo))
+                    },
+                    onError = {
+                        setShowError(true)
+                        Log.e("ERROR", "Fallo la petición: ${it.localizedMessage}")
+                    }
+                )
             } else {
                 setShowError(true)
             }
@@ -247,8 +245,54 @@ fun uriToBitmap(context: android.content.Context, uri: android.net.Uri): Bitmap?
     }
 }
 
-@Preview
-@Composable
-fun TextPreview() {
-    TextCaptureComponent()
+fun bitmapToBase64(bitmap: Bitmap): String {
+    val stream = ByteArrayOutputStream()
+    bitmap.compress(Bitmap.CompressFormat.JPEG, 90, stream)
+    val byteArray = stream.toByteArray()
+    return android.util.Base64.encodeToString(byteArray, android.util.Base64.NO_WRAP)
+}
+
+fun enviarImagenAlBackend(
+    base64Image: String,
+    onResult: (String) -> Unit,
+    onError: (Exception) -> Unit
+) {
+    val jsonObject = JSONObject()
+    jsonObject.put("image", base64Image)
+    val body = RequestBody.create(
+        "application/json".toMediaType(),
+        jsonObject.toString()
+    )
+
+    val client = OkHttpClient()
+    val request = Request.Builder()
+        .url("http://10.0.2.2:5000/predict")
+        .post(body)
+        .build()
+
+    client.newCall(request).enqueue(object : Callback {
+        override fun onFailure(call: Call, e: IOException) {
+            onError(e)
+        }
+
+        override fun onResponse(call: Call, response: Response) {
+            response.body?.string()?.let { body ->
+                Log.d("RESPUESTA_BACKEND", body)
+                try {
+                    val jsonObject = JSONObject(body)
+                    val somatotipo = jsonObject.getString("somatotipo")
+
+                    // Ejecutar en el hilo principal
+                    Handler(Looper.getMainLooper()).post {
+                        onResult(somatotipo)
+                    }
+                } catch (e: Exception) {
+                    Handler(Looper.getMainLooper()).post {
+                        onError(e)
+                    }
+                }
+            }
+        }
+
+    })
 }

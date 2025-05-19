@@ -2,11 +2,7 @@ package com.dapm.fitvision.screens
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,14 +15,29 @@ import androidx.compose.ui.unit.sp
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun ResultScreen() {
-    // Por ahora simulamos un resultado
-    val somatotipo = "Ectomorfo"
-    val caracteristicas = listOf(
-        "Metabolismo muy rápido",
-        "Delgado y lineal",
-        "Poca grasa corporal"
-    )
+fun ResultScreen(somatotipo: String) {
+    // Características según el somatotipo
+    val caracteristicas = when (somatotipo) {
+        "Ectomorfo" -> listOf(
+            "Metabolismo muy rápido",
+            "Delgado y lineal",
+            "Poca grasa corporal"
+        )
+        "Mesomorfo" -> listOf(
+            "Musculatura desarrollada",
+            "Fácil ganancia de masa",
+            "Cintura delgada"
+        )
+        "Endomorfo" -> listOf(
+            "Tendencia a acumular grasa",
+            "Cuerpo ancho",
+            "Dificultad para definir músculos"
+        )
+        else -> listOf(
+            "No se pudo identificar el somatotipo",
+            "Intenta nuevamente"
+        )
+    }
 
     Scaffold {
         ResultBodyComponent(

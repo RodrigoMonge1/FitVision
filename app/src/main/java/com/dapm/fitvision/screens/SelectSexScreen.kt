@@ -2,30 +2,12 @@ package com.dapm.fitvision.screens
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,7 +16,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -43,15 +24,16 @@ import com.dapm.fitvision.navigation.AppScreens
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun SelectSexScreen(navController: NavController){
+fun SelectSexScreen(navController: NavController) {
     Scaffold {
         SelectSexBodyComponent(navController)
     }
 }
 
 @Composable
-fun SelectSexBodyComponent(navController: NavController){
-    var selectedSex by remember {mutableStateOf<String?>(null) }
+fun SelectSexBodyComponent(navController: NavController) {
+    var selectedSex by remember { mutableStateOf<String?>(null) }
+    var showError by remember { mutableStateOf(false) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -63,15 +45,19 @@ fun SelectSexBodyComponent(navController: NavController){
                 .padding(horizontal = 40.dp, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row (Modifier.padding(top = 120.dp, bottom = 30.dp)){
-                SexTextComponent()
-            }
+            Spacer(modifier = Modifier.height(120.dp))
+            SexTextComponent()
+
+            Spacer(modifier = Modifier.height(30.dp))
 
             SexoOptionButton(
                 imagenId = R.drawable.hombre_img,
                 texto = "HOMBRE",
                 isSelected = selectedSex == "HOMBRE",
-                onClick = { selectedSex = "HOMBRE" }
+                onClick = {
+                    selectedSex = "HOMBRE"
+                    showError = false
+                }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -80,30 +66,47 @@ fun SelectSexBodyComponent(navController: NavController){
                 imagenId = R.drawable.mujer_img,
                 texto = "MUJER",
                 isSelected = selectedSex == "MUJER",
-                onClick = { selectedSex = "MUJER" }
+                onClick = {
+                    selectedSex = "MUJER"
+                    showError = false
+                }
             )
 
             Spacer(modifier = Modifier.weight(1f))
 
-            ContinueButtonComponent(navController)
+            ContinueButtonComponent(
+                selectedSex = selectedSex,
+                showError = showError,
+                onContinue = {
+                    if (selectedSex != null) {
+                        navController.navigate(route = AppScreens.CaptureScreen.route)
+                    } else {
+                        showError = true
+                    }
+                }
+            )
         }
     }
 }
 
-
 @Composable
-fun SexTextComponent(){
-        Text(
-            text = "Selecciona tu sexo",
-            fontSize = 36.sp,
-            fontWeight = FontWeight.Medium,
-            color = Color.White,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(horizontal = 10.dp))
+fun SexTextComponent() {
+    Text(
+        text = "Selecciona tu sexo",
+        fontSize = 36.sp,
+        fontWeight = FontWeight.Medium,
+        color = Color.White,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.padding(horizontal = 10.dp)
+    )
 }
 
 @Composable
-fun SexoOptionButton(imagenId: Int, texto: String, isSelected: Boolean, onClick: () -> Unit
+fun SexoOptionButton(
+    imagenId: Int,
+    texto: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
 ) {
     val borderColor = if (isSelected) Color.Red else Color.Transparent
 
@@ -136,30 +139,40 @@ fun SexoOptionButton(imagenId: Int, texto: String, isSelected: Boolean, onClick:
 }
 
 @Composable
-fun ContinueButtonComponent(navController: NavController) {
-    Button(
-        onClick = {navController.navigate(route = AppScreens.CaptureScreen.route)},
-        modifier = Modifier
-            .padding(bottom = 70.dp)
-            .width(300.dp)
-            .height(56.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF1E2E78), // Color azul oscuro del botón
-            contentColor = Color.White // Texto blanco
-        )
-    ) {
-        Text(
-            text = "Continuar",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
-        )
+fun ContinueButtonComponent(
+    selectedSex: String?,
+    showError: Boolean,
+    onContinue: () -> Unit
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        if (showError) {
+            Text(
+                text = "Selecciona tu sexo",
+                color = Color.Red,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+        }
+
+        Button(
+            onClick = { onContinue() },
+            enabled = selectedSex != null,
+            modifier = Modifier
+                .padding(bottom = 70.dp)
+                .width(300.dp)
+                .height(56.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (selectedSex != null) Color(0xFF1E2E78) else Color.Gray,
+                contentColor = Color.White
+            )
+        ) {
+            Text(
+                text = "Continuar",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
-}
-
-
-@Preview
-@Composable
-fun SexTextPreview(){
-    SexTextComponent()
 }

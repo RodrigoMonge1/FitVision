@@ -2,14 +2,10 @@ package com.dapm.fitvision.screens
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
-import android.net.Uri
-import android.os.Environment
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,7 +30,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -42,15 +37,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.FileProvider
 import androidx.navigation.NavController
 import com.dapm.fitvision.R
 import com.dapm.fitvision.navigation.AppScreens
-import java.io.File
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun CaptureScreen(navController: NavController){
+fun CaptureScreen(navController: NavController) {
     Scaffold {
         CaptureBodyComponent(navController)
     }
@@ -60,12 +53,14 @@ fun CaptureScreen(navController: NavController){
 fun CaptureBodyComponent(navController: NavController) {
     val context = LocalContext.current
     var capturedImage by remember { mutableStateOf<Bitmap?>(null) }
+    var showError by remember { mutableStateOf(false) }
 
     val cameraLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.TakePicturePreview()
     ) { bitmap ->
         if (bitmap != null) {
             capturedImage = bitmap
+            showError = false
             Log.d("CAMERA", "Imagen capturada correctamente")
         } else {
             Log.e("CAMERA", "Error al capturar imagen o cancelado")
@@ -74,9 +69,15 @@ fun CaptureBodyComponent(navController: NavController) {
 
     val galleryLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
-    ) {
-        Log.d("GALERIA", "Imagen seleccionada: $it")
-        // Aquí puedes almacenar el URI si necesitas
+    ) { uri ->
+        if (uri != null) {
+            val bitmap = uriToBitmap(context, uri)
+            capturedImage = bitmap
+            showError = false
+            Log.d("GALERIA", "Imagen seleccionada correctamente")
+        } else {
+            Log.e("GALERIA", "Error al seleccionar imagen o cancelado")
+        }
     }
 
     Surface(
@@ -95,33 +96,47 @@ fun CaptureBodyComponent(navController: NavController) {
             Spacer(modifier = Modifier.height(40.dp))
 
             ImageSelectionButtons(
-                onCameraClick = { cameraLauncher.launch()},
+                onCameraClick = { cameraLauncher.launch() },
                 onGalleryClick = { galleryLauncher.launch("image/*") }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Mostrar imagen capturada
-            capturedImage?.let { bitmap ->
-                Image(
-                    bitmap = bitmap.asImageBitmap(),
-                    contentDescription = "Imagen tomada",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp)
+            if (capturedImage != null) {
+                Text(
+                    text = "Imagen cargada con éxito",
+                    color = Color.Green,
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(bottom = 12.dp)
                 )
             }
 
             Spacer(modifier = Modifier.weight(1f))
 
-            CalculateButtonComponent(navController)
+            // Mostrar error si no hay imagen al hacer clic
+            if (showError) {
+                Text(
+                    text = "Debe subir una imagen de cuerpo completo antes de continuar",
+                    color = Color.Red,
+                    fontSize = 16.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+            }
+
+            CalculateButtonComponent(
+                capturedImage = capturedImage,
+                showError = showError,
+                setShowError = { showError = it },
+                navController = navController
+            )
         }
     }
 }
 
-
 @Composable
-fun TextCaptureComponent(){
+fun TextCaptureComponent() {
     Text(
         text = "Aproximación del somatotipo",
         fontSize = 30.sp,
@@ -129,16 +144,19 @@ fun TextCaptureComponent(){
         color = Color.White,
         textAlign = TextAlign.Center,
         modifier = Modifier
-            .padding(top = 110.dp, bottom = 40.dp))
+            .padding(top = 110.dp, bottom = 40.dp)
+    )
 }
 
 @Composable
-fun TextDescriptionComponent(){
-    Text(text = "Captura o carga una imagen para analizar tu tipo de cuerpo",
+fun TextDescriptionComponent() {
+    Text(
+        text = "Captura o carga una imagen para analizar tu tipo de cuerpo",
         fontSize = 30.sp,
         fontWeight = FontWeight.Bold,
         color = Color.White,
-        textAlign = TextAlign.Center)
+        textAlign = TextAlign.Center
+    )
 }
 
 @Composable
@@ -187,17 +205,28 @@ fun IconTextButton(iconId: Int, text: String, onClick: () -> Unit) {
 }
 
 @Composable
-fun CalculateButtonComponent(navController: NavController) {
+fun CalculateButtonComponent(
+    capturedImage: Bitmap?,
+    showError: Boolean,
+    setShowError: (Boolean) -> Unit,
+    navController: NavController
+) {
     Button(
-        onClick = {navController.navigate(route = AppScreens.LoadingScreen.route)},
+        onClick = {
+            if (capturedImage != null) {
+                navController.navigate(route = AppScreens.LoadingScreen.route)
+            } else {
+                setShowError(true)
+            }
+        },
         modifier = Modifier
             .padding(bottom = 70.dp)
             .width(300.dp)
             .height(56.dp),
         shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF1E2E78), // Color azul oscuro del botón
-            contentColor = Color.White // Texto blanco
+            containerColor = Color(0xFF1E2E78),
+            contentColor = Color.White
         )
     ) {
         Text(
@@ -208,8 +237,18 @@ fun CalculateButtonComponent(navController: NavController) {
     }
 }
 
+fun uriToBitmap(context: android.content.Context, uri: android.net.Uri): Bitmap? {
+    return try {
+        val stream = context.contentResolver.openInputStream(uri)
+        android.graphics.BitmapFactory.decodeStream(stream)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
+}
+
 @Preview
 @Composable
-fun TextPreview(){
+fun TextPreview() {
     TextCaptureComponent()
 }

@@ -132,7 +132,6 @@ fun WelcomeButtonComponent(navController: NavController) {
     }
 }
 
-
 @Preview
 @Composable
 fun TittlePreview(){

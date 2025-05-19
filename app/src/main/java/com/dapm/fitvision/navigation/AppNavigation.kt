@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.dapm.fitvision.screens.CaptureScreen
 import com.dapm.fitvision.screens.LoadingScreen
+import com.dapm.fitvision.screens.ResultScreen
 import com.dapm.fitvision.screens.SelectSexScreen
 import com.dapm.fitvision.screens.WelcomeScreen
 
@@ -23,7 +24,10 @@ fun AppNavigation() {
             CaptureScreen(navController)
         }
         composable(AppScreens.LoadingScreen.route){
-            LoadingScreen()
+            LoadingScreen(navController)
+        }
+        composable(AppScreens.ResultScreen.route){
+            ResultScreen()
         }
     }
 }

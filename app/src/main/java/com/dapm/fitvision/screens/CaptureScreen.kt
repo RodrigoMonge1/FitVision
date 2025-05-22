@@ -131,8 +131,7 @@ fun TextCaptureComponent() {
         fontWeight = FontWeight.ExtraBold,
         color = Color.White,
         textAlign = TextAlign.Center,
-        modifier = Modifier
-            .padding(top = 110.dp, bottom = 40.dp)
+        modifier = Modifier.padding(top = 110.dp, bottom = 40.dp)
     )
 }
 
@@ -206,7 +205,7 @@ fun CalculateButtonComponent(
                 enviarImagenAlBackend(
                     base64Image = base64,
                     onResult = { tipo ->
-                        navController.navigate(AppScreens.ResultScreen.createRoute(tipo))
+                        navController.navigate(AppScreens.LoadingScreen.createRoute(tipo))
                     },
                     onError = {
                         setShowError(true)
@@ -281,8 +280,6 @@ fun enviarImagenAlBackend(
                 try {
                     val jsonObject = JSONObject(body)
                     val somatotipo = jsonObject.getString("somatotipo")
-
-                    // Ejecutar en el hilo principal
                     Handler(Looper.getMainLooper()).post {
                         onResult(somatotipo)
                     }
@@ -293,6 +290,5 @@ fun enviarImagenAlBackend(
                 }
             }
         }
-
     })
 }

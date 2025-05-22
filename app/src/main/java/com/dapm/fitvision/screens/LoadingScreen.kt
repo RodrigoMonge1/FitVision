@@ -21,26 +21,26 @@ import kotlinx.coroutines.delay
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun LoadingScreen(navController: NavController) {
+fun LoadingScreen(navController: NavController, somatotipo: String) {
     Scaffold {
-        LoadingBodyComponent(navController)
+        LoadingBodyComponent(navController, somatotipo)
     }
 }
 
 @Composable
-fun LoadingBodyComponent(navController: NavController) {
+fun LoadingBodyComponent(navController: NavController, somatotipo: String) {
     var progress by remember { mutableStateOf(0) }
     var completed by remember { mutableStateOf(false) }
 
     // Simulación del progreso
     LaunchedEffect(Unit) {
         while (progress < 100) {
-            delay(50)
+            delay(30)
             progress += 2
         }
         completed = true
-        delay(800) // Pequeña pausa tras el 100%
-        navController.navigate(AppScreens.ResultScreen.route)
+        delay(600)
+        navController.navigate(AppScreens.ResultScreen.createRoute(somatotipo))
     }
 
     val circleColor by animateColorAsState(

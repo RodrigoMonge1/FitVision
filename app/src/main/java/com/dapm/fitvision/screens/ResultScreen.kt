@@ -9,14 +9,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.dapm.fitvision.navigation.AppScreens
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun ResultScreen(somatotipo: String) {
-    // Características según el somatotipo
+fun ResultScreen(navController: NavController, somatotipo: String) {
     val caracteristicas = when (somatotipo) {
         "Ectomorfo" -> listOf(
             "Metabolismo muy rápido",
@@ -42,7 +42,8 @@ fun ResultScreen(somatotipo: String) {
     Scaffold {
         ResultBodyComponent(
             somatotipo = somatotipo,
-            caracteristicas = caracteristicas
+            caracteristicas = caracteristicas,
+            navController = navController
         )
     }
 }
@@ -50,7 +51,8 @@ fun ResultScreen(somatotipo: String) {
 @Composable
 fun ResultBodyComponent(
     somatotipo: String,
-    caracteristicas: List<String>
+    caracteristicas: List<String>,
+    navController: NavController
 ) {
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -106,7 +108,9 @@ fun ResultBodyComponent(
             Spacer(modifier = Modifier.weight(1f))
 
             Button(
-                onClick = { /* Acción futura */ },
+                onClick = {
+                    navController.navigate(AppScreens.ExerciseScreen.createRoute(somatotipo))
+                },
                 modifier = Modifier
                     .padding(bottom = 30.dp)
                     .width(260.dp)
@@ -124,17 +128,4 @@ fun ResultBodyComponent(
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ResultPreview() {
-    ResultBodyComponent(
-        somatotipo = "Mesomorfo",
-        caracteristicas = listOf(
-            "Musculatura desarrollada",
-            "Fácil ganancia de masa",
-            "Cintura delgada"
-        )
-    )
 }

@@ -2,7 +2,9 @@ package com.dapm.fitvision.screens
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,6 +24,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -29,12 +33,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.dapm.fitvision.R
 import com.dapm.fitvision.navigation.AppScreens
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun WelcomeScreen(navController: NavController){
+fun WelcomeScreen(navController: NavController) {
     Scaffold {
         WelcomeBodyComponent(navController)
     }
@@ -42,27 +47,27 @@ fun WelcomeScreen(navController: NavController){
 
 @Composable
 fun WelcomeBodyComponent(navController: NavController) {
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color.Black
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
     ) {
+        Image(
+            painter = painterResource(id = R.drawable.inicio_img), // reemplaza con tu imagen de fondo real
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 40.dp, vertical = 24.dp),
+                .padding(horizontal = 60.dp, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row (Modifier.padding(top = 150.dp)){
-                // Logo y encabezado
-                LogoTitleComponent()
-            }
-            //Espacio entre logo y la descripcion
-            Spacer(modifier = Modifier.height(90.dp))
-
-            TextComponent()
-            // Spacer para empujar el botón hacia abajo
+            Spacer(modifier = Modifier.height(80.dp))
+            LogoTitleComponent()
             Spacer(modifier = Modifier.weight(1f))
-            // Botón
+            TextComponent()
             WelcomeButtonComponent(navController)
         }
     }
@@ -72,7 +77,7 @@ fun WelcomeBodyComponent(navController: NavController) {
 fun LogoTitleComponent() {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center,
+        horizontalArrangement = Arrangement.Start,
         modifier = Modifier.fillMaxWidth()
     ) {
         Image(
@@ -107,7 +112,8 @@ fun TextComponent(){
         color = Color.White,
         fontSize = 24.sp,
         lineHeight = 28.sp,
-        textAlign = TextAlign.Center)
+        textAlign = TextAlign.Start,
+        modifier = Modifier.padding(bottom = 40.dp))
 }
 
 @Composable
@@ -132,8 +138,9 @@ fun WelcomeButtonComponent(navController: NavController) {
     }
 }
 
-@Preview
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
-fun TittlePreview(){
-    LogoTitleComponent()
+fun WelcomeScreenPreview() {
+    val navController = rememberNavController()
+    WelcomeBodyComponent(navController = navController)
 }

@@ -1,17 +1,21 @@
 package com.dapm.fitvision.screens
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.dapm.fitvision.R
 import com.dapm.fitvision.navigation.AppScreens
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -23,16 +27,19 @@ fun ResultScreen(navController: NavController, somatotipo: String) {
             "Delgado y lineal",
             "Poca grasa corporal"
         )
+
         "Mesomorfo" -> listOf(
             "Musculatura desarrollada",
             "Fácil ganancia de masa",
             "Cintura delgada"
         )
+
         "Endomorfo" -> listOf(
             "Tendencia a acumular grasa",
             "Cuerpo ancho",
             "Dificultad para definir músculos"
         )
+
         else -> listOf(
             "No se pudo identificar el somatotipo",
             "Intenta nuevamente"
@@ -50,14 +57,19 @@ fun ResultScreen(navController: NavController, somatotipo: String) {
 
 @Composable
 fun ResultBodyComponent(
-    somatotipo: String,
-    caracteristicas: List<String>,
-    navController: NavController
+    somatotipo: String, caracteristicas: List<String>, navController: NavController
 ) {
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color.Black
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
     ) {
+        Image(
+            painter = painterResource(id = R.drawable.process_img), // reemplaza con tu imagen de fondo real
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -127,5 +139,6 @@ fun ResultBodyComponent(
                 )
             }
         }
+
     }
 }

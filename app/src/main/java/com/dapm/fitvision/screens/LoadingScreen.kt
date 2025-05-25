@@ -2,6 +2,7 @@ package com.dapm.fitvision.screens
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Scaffold
@@ -11,11 +12,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.dapm.fitvision.R
 import com.dapm.fitvision.navigation.AppScreens
 import kotlinx.coroutines.delay
 
@@ -48,10 +52,16 @@ fun LoadingBodyComponent(navController: NavController, somatotipo: String) {
         label = "circleColor"
     )
 
-    Surface(
+    Box(
         modifier = Modifier.fillMaxSize(),
-        color = Color.Black
     ) {
+        Image(
+            painter = painterResource(id = R.drawable.process_img), // reemplaza con tu imagen de fondo real
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+
         Column(
             modifier = Modifier
                 .fillMaxSize()

@@ -16,9 +16,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.dapm.fitvision.R
 import com.dapm.fitvision.navigation.AppScreens
 
@@ -35,20 +37,26 @@ fun SelectSexBodyComponent(navController: NavController) {
     var selectedSex by remember { mutableStateOf<String?>(null) }
     var showError by remember { mutableStateOf(false) }
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color.Black
-    ) {
+    Box(modifier = Modifier
+        .fillMaxSize()
+    ){
+        Image(
+            painter = painterResource(id = R.drawable.inicio2_img), // reemplaza con tu imagen de fondo real
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 40.dp, vertical = 24.dp),
+                .padding(horizontal = 60.dp, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(100.dp))
+            Spacer(modifier = Modifier.height(60.dp))
             SexTextComponent()
 
-            Spacer(modifier = Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
             SexoOptionButton(
                 imagenId = R.drawable.hombre_img,
@@ -94,10 +102,10 @@ fun SexTextComponent() {
     Text(
         text = "Selecciona tu sexo",
         fontSize = 36.sp,
-        fontWeight = FontWeight.Medium,
+        fontWeight = FontWeight.Bold,
         color = Color.White,
         textAlign = TextAlign.Center,
-        modifier = Modifier.padding(horizontal = 10.dp)
+        modifier = Modifier.padding(horizontal = 30.dp)
     )
 }
 
@@ -175,4 +183,11 @@ fun ContinueButtonComponent(
             )
         }
     }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun SexScreenPreview() {
+    val navController = rememberNavController()
+    SelectSexBodyComponent(navController = navController)
 }

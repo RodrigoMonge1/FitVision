@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -15,13 +16,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.dapm.fitvision.R
 import com.dapm.fitvision.navigation.AppScreens
 import okhttp3.*
@@ -68,28 +72,33 @@ fun CaptureBodyComponent(navController: NavController) {
             Log.e("GALERIA", "Error al seleccionar imagen o cancelado")
         }
     }
+    Box(modifier = Modifier
+        .fillMaxSize()
+    ){
+        Image(
+            painter = painterResource(id = R.drawable.capture_img), // reemplaza con tu imagen de fondo real
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color.Black
-    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 40.dp, vertical = 24.dp),
+                .padding(horizontal = 60.dp, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             TextCaptureComponent()
             Spacer(modifier = Modifier.height(20.dp))
             TextDescriptionComponent()
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.weight(1f))
 
             ImageSelectionButtons(
                 onCameraClick = { cameraLauncher.launch() },
                 onGalleryClick = { galleryLauncher.launch("image/*") }
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             if (capturedImage != null) {
                 Text(
@@ -101,7 +110,7 @@ fun CaptureBodyComponent(navController: NavController) {
                 )
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(60.dp))
 
             if (showError) {
                 Text(
@@ -128,10 +137,10 @@ fun TextCaptureComponent() {
     Text(
         text = "Aproximación del somatotipo",
         fontSize = 30.sp,
-        fontWeight = FontWeight.ExtraBold,
+        fontWeight = FontWeight.Bold,
         color = Color.White,
-        textAlign = TextAlign.Center,
-        modifier = Modifier.padding(top = 110.dp, bottom = 40.dp)
+        textAlign = TextAlign.Start,
+        modifier = Modifier.padding(top = 70.dp, bottom = 30.dp)
     )
 }
 
@@ -139,10 +148,10 @@ fun TextCaptureComponent() {
 fun TextDescriptionComponent() {
     Text(
         text = "Captura o carga una imagen para analizar tu tipo de cuerpo",
-        fontSize = 30.sp,
-        fontWeight = FontWeight.Bold,
+        fontSize = 24.sp,
+        fontWeight = FontWeight.Medium,
         color = Color.White,
-        textAlign = TextAlign.Center
+        textAlign = TextAlign.Start
     )
 }
 
@@ -161,7 +170,7 @@ fun ImageSelectionButtons(
         IconTextButton(
             iconId = R.drawable.ic_gallery,
             text = "Cargar imagen",
-            onClick = onGalleryClick
+            onClick = onGalleryClick,
         )
     }
 }
@@ -265,7 +274,7 @@ fun enviarImagenAlBackend(
 
     val client = OkHttpClient()
     val request = Request.Builder()
-        .url("http://10.0.2.2:5000/predict")
+        .url("http://192.168.0.11:5000/predict")
         .post(body)
         .build()
 
@@ -291,4 +300,11 @@ fun enviarImagenAlBackend(
             }
         }
     })
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun CaptureScreenPreview() {
+    val navController = rememberNavController()
+    CaptureBodyComponent(navController = navController)
 }

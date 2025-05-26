@@ -3,7 +3,9 @@ package com.dapm.fitvision.navigation
 sealed class AppScreens(val route: String) {
     object WelcomeScreen : AppScreens("welcome_screen")
     object SelectSexScreen : AppScreens("select_sex_screen")
-    object CaptureScreen : AppScreens("capture_screen")
+    object CaptureScreen : AppScreens("capture_screen/{sex}") {
+        fun createRoute(sex: String) = "capture_screen/$sex"
+    }
     object LoadingScreen : AppScreens("loading_screen/{tipo}") {
         fun createRoute(tipo: String) = "loading_screen/$tipo"
     }

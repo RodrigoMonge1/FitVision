@@ -50,7 +50,7 @@ fun SelectSexBodyComponent(navController: NavController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 60.dp, vertical = 24.dp),
+                .padding(horizontal = 50.dp, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(60.dp))
@@ -63,7 +63,7 @@ fun SelectSexBodyComponent(navController: NavController) {
                 texto = "HOMBRE",
                 isSelected = selectedSex == "HOMBRE",
                 onClick = {
-                    selectedSex = "HOMBRE"
+                    selectedSex = "Masculino"
                     showError = false
                 }
             )
@@ -75,7 +75,7 @@ fun SelectSexBodyComponent(navController: NavController) {
                 texto = "MUJER",
                 isSelected = selectedSex == "MUJER",
                 onClick = {
-                    selectedSex = "MUJER"
+                    selectedSex = "Femenino"
                     showError = false
                 }
             )
@@ -87,7 +87,7 @@ fun SelectSexBodyComponent(navController: NavController) {
                 showError = showError,
                 onContinue = {
                     if (selectedSex != null) {
-                        navController.navigate(route = AppScreens.CaptureScreen.route)
+                        navController.navigate(AppScreens.CaptureScreen.createRoute(selectedSex!!))
                     } else {
                         showError = true
                     }
@@ -178,7 +178,7 @@ fun ContinueButtonComponent(
         ) {
             Text(
                 text = "Continuar",
-                fontSize = 24.sp,
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
         }

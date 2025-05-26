@@ -109,7 +109,7 @@ fun ExerciseBodyComponent(somatotipo: String) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 30.dp, vertical = 30.dp),
+                .padding(horizontal = 40.dp, vertical = 30.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(

@@ -19,8 +19,12 @@ fun AppNavigation() {
         composable(AppScreens.SelectSexScreen.route) {
             SelectSexScreen(navController)
         }
-        composable(AppScreens.CaptureScreen.route) {
-            CaptureScreen(navController)
+        composable(
+            route = AppScreens.CaptureScreen.route,
+            arguments = listOf(navArgument("sex") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val sex = backStackEntry.arguments?.getString("sex") ?: "Desconocido"
+            CaptureScreen(navController = navController, sex = sex)
         }
         composable(
             route = AppScreens.LoadingScreen.route,

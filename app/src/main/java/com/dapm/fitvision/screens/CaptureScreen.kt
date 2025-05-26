@@ -1,10 +1,12 @@
 package com.dapm.fitvision.screens
 
 import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
@@ -24,6 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.dapm.fitvision.R
@@ -36,17 +39,18 @@ import java.io.IOException
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun CaptureScreen(navController: NavController) {
+fun CaptureScreen(navController: NavController, sex: String) {
     Scaffold {
-        CaptureBodyComponent(navController)
+        CaptureBodyComponent(navController, sex)
     }
 }
 
 @Composable
-fun CaptureBodyComponent(navController: NavController) {
+fun CaptureBodyComponent(navController: NavController, sex: String) {
     val context = LocalContext.current
     var capturedImage by remember { mutableStateOf<Bitmap?>(null) }
     var showError by remember { mutableStateOf(false) }
+    var cameraPermissionGranted by remember { mutableStateOf(false) }
 
     val cameraLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.TakePicturePreview()
@@ -57,6 +61,17 @@ fun CaptureBodyComponent(navController: NavController) {
             Log.d("CAMERA", "Imagen capturada correctamente")
         } else {
             Log.e("CAMERA", "Error al capturar imagen o cancelado")
+        }
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        cameraPermissionGranted = isGranted
+        if (isGranted) {
+            cameraLauncher.launch()
+        } else {
+            Toast.makeText(context, "Se requiere permiso de cámara", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -72,11 +87,10 @@ fun CaptureBodyComponent(navController: NavController) {
             Log.e("GALERIA", "Error al seleccionar imagen o cancelado")
         }
     }
-    Box(modifier = Modifier
-        .fillMaxSize()
-    ){
+
+    Box(modifier = Modifier.fillMaxSize()) {
         Image(
-            painter = painterResource(id = R.drawable.capture_img), // reemplaza con tu imagen de fondo real
+            painter = painterResource(id = R.drawable.capture_img),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
@@ -85,7 +99,7 @@ fun CaptureBodyComponent(navController: NavController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 60.dp, vertical = 24.dp),
+                .padding(horizontal = 50.dp, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             TextCaptureComponent()
@@ -94,7 +108,15 @@ fun CaptureBodyComponent(navController: NavController) {
             Spacer(modifier = Modifier.weight(1f))
 
             ImageSelectionButtons(
-                onCameraClick = { cameraLauncher.launch() },
+                onCameraClick = {
+                    if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.CAMERA)
+                        == PackageManager.PERMISSION_GRANTED
+                    ) {
+                        cameraLauncher.launch()
+                    } else {
+                        permissionLauncher.launch(android.Manifest.permission.CAMERA)
+                    }
+                },
                 onGalleryClick = { galleryLauncher.launch("image/*") }
             )
 
@@ -126,7 +148,8 @@ fun CaptureBodyComponent(navController: NavController) {
                 capturedImage = capturedImage,
                 showError = showError,
                 setShowError = { showError = it },
-                navController = navController
+                navController = navController,
+                sex = sex
             )
         }
     }
@@ -205,7 +228,8 @@ fun CalculateButtonComponent(
     capturedImage: Bitmap?,
     showError: Boolean,
     setShowError: (Boolean) -> Unit,
-    navController: NavController
+    navController: NavController,
+    sex: String
 ) {
     Button(
         onClick = {
@@ -213,6 +237,7 @@ fun CalculateButtonComponent(
                 val base64 = bitmapToBase64(capturedImage)
                 enviarImagenAlBackend(
                     base64Image = base64,
+                    sex = sex,
                     onResult = { tipo ->
                         navController.navigate(AppScreens.LoadingScreen.createRoute(tipo))
                     },
@@ -237,7 +262,7 @@ fun CalculateButtonComponent(
     ) {
         Text(
             text = "Calcular somatotipo",
-            fontSize = 24.sp,
+            fontSize = 20.sp,
             fontWeight = FontWeight.Bold
         )
     }
@@ -262,11 +287,13 @@ fun bitmapToBase64(bitmap: Bitmap): String {
 
 fun enviarImagenAlBackend(
     base64Image: String,
+    sex: String,
     onResult: (String) -> Unit,
     onError: (Exception) -> Unit
 ) {
     val jsonObject = JSONObject()
     jsonObject.put("image", base64Image)
+    jsonObject.put("sex", sex)
     val body = RequestBody.create(
         "application/json".toMediaType(),
         jsonObject.toString()
@@ -274,7 +301,7 @@ fun enviarImagenAlBackend(
 
     val client = OkHttpClient()
     val request = Request.Builder()
-        .url("http://192.168.0.11:5000/predict")
+        .url("https://fitvision-backend-production.up.railway.app/predict")
         .post(body)
         .build()
 
@@ -306,5 +333,5 @@ fun enviarImagenAlBackend(
 @Composable
 fun CaptureScreenPreview() {
     val navController = rememberNavController()
-    CaptureBodyComponent(navController = navController)
+    CaptureBodyComponent(navController = navController, sex = "Masculino")
 }
